@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered PromoGen</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the AI-Powered PromoGen!</h1>
+        <form id="promoForm">
+            <label for="productImages">Product Images (comma-separated paths):</label>
+            <input type="text" id="productImages" name="product_images" required>
+
+            <label for="offer">Promotional Offer:</label>
+            <input type="text" id="offer" name="offer" required>
+
+            <label for="color_palette">Color Palette (e.g., (255, 0, 0)): </label>
+            <input type="text" id="color_palette" name="color_palette" required>
+
+            <label for="theme">Theme:</label>
+            <input type="text" id="theme" name="theme" required>
+
+            <button type="submit">Generate Banner</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('promoForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting the default way
+
+            const formData = new FormData(this);
+            const jsonData = {};
+            formData.forEach((value, key) => {
+                if (key === 'product_images') {
+                    jsonData[key] = value.split(',').map(img => img.trim()); // Split and trim image paths
+                } else {
+                    jsonData[key] = value;
+                }
+            });
+
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.banner_path) {
+                    document.getElementById('result').innerHTML = `<img src="${data.banner_path}" alt="Generated Banner" />`;
+                } else {
+                    document.getElementById('result').textContent = data.error || 'An error occurred.';
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            });
+        });
+    </script>
+</body>
+</html>
